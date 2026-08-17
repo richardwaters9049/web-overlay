@@ -1,11 +1,18 @@
 'use client';
 
+import { useRef, useState } from 'react';
 import Image from 'next/image';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import DonationOverlay from '../components/donation_overlay';
 import BrowserOverlay from '../components/browser_overlay';
 
 export default function Home() {
+  const [showDonationOverlay, setShowDonationOverlay] =
+    useState(false);
+
+  const streamAreaRef =
+    useRef<HTMLElement | null>(null);
+
   return (
     <main className="h-screen w-full bg-black px-8 py-16">
       <div className="relative mx-auto aspect-video w-full overflow-hidden bg-linear-to-tr from-green-700 to-green-900">
@@ -66,12 +73,54 @@ export default function Home() {
 
 
         {/* Stream area */}
-        <section className="absolute inset-0">
+        <section
+          ref={streamAreaRef}
+          className="absolute inset-0"
+        >
 
           {/* OBS game capture */}
-          <div className="donate-container hidden">
-            <DonationOverlay />
+
+
+          {/* Browser overlay */}
+          <div className="brows-container hidden">
+            <BrowserOverlay
+              src="https://example.com"
+              url="example.com"
+              width="46%"
+              dragConstraints={streamAreaRef}
+            />
           </div>
+
+
+          {/* Donation overlay */}
+          <AnimatePresence>
+            {showDonationOverlay && (
+              <motion.div
+                initial={{
+                  opacity: 0,
+                  scale: 0.92,
+                  y: 30,
+                }}
+                animate={{
+                  opacity: 0.95,
+                  scale: 1,
+                  y: 0,
+                }}
+                exit={{
+                  opacity: 0,
+                  scale: 0.94,
+                  y: 20,
+                }}
+                transition={{
+                  duration: 0.6,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
+                className="absolute inset-0 z-[80]"
+              >
+                <DonationOverlay />
+              </motion.div>
+            )}
+          </AnimatePresence>
 
         </section>
 
@@ -166,6 +215,28 @@ export default function Home() {
         </motion.div>
 
 
+        {/* Donate button */}
+        <motion.button
+          type="button"
+          onClick={() =>
+            setShowDonationOverlay(
+              (current) => !current,
+            )
+          }
+          whileHover={{
+            scale: 1.04,
+          }}
+          whileTap={{
+            scale: 0.96,
+          }}
+          className="absolute right-10 top-24 z-[90] border border-red-600/60 bg-black/90 px-5 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.3em] text-red-600 transition-colors duration-300 hover:bg-red-600 hover:text-black hidden"
+        >
+          {showDonationOverlay
+            ? 'CLOSE DONATIONS'
+            : 'DONATE'}
+        </motion.button>
+
+
         {/* Left system markings */}
         <div className="absolute bottom-36 left-10 top-32 z-20">
 
@@ -198,7 +269,7 @@ export default function Home() {
 
 
         {/* Chat */}
-        <aside className="absolute bottom-36 right-10 top-32 z-30 w-80">
+        <aside className="absolute bottom-36 right-10 top-32 z-30 w-80 hidden">
 
           <div className="relative flex h-full flex-col">
 
@@ -275,8 +346,16 @@ export default function Home() {
               </p>
 
               {/* REAPER name */}
-              <p className="reaper-font mt-2 text-2xl text-white flex gap-1">
-                <span className="text-red-600 font-mono">@</span>REAPER <span className="text-red-600 font-mono">990</span>
+              <p className="reaper-font mt-2 flex gap-1 text-2xl text-white">
+                <span className="font-mono text-red-600">
+                  @
+                </span>
+
+                REAPER
+
+                <span className="font-mono text-red-600">
+                  990
+                </span>
               </p>
 
             </div>
@@ -402,7 +481,6 @@ export default function Home() {
 }
 
 
-/* Like and subscribe */
 function LikeSubscribe() {
   return (
     <motion.div
@@ -499,7 +577,6 @@ function LikeSubscribe() {
 }
 
 
-/* Chat message */
 function ChatMessage({
   username,
   message,
@@ -533,7 +610,6 @@ function ChatMessage({
 }
 
 
-/* Statistics */
 function Stat({
   label,
   value,
@@ -559,35 +635,43 @@ function Stat({
 }
 
 
-/* Corner decoration */
 function Corner({
   position,
 }: {
   position: 'left' | 'right';
 }) {
-  const left = position === 'left';
+  const left =
+    position === 'left';
 
   return (
     <div
-      className={`absolute bottom-6 z-50 h-14 w-14 ${left ? 'left-6' : 'right-6'
+      className={`absolute bottom-6 z-50 h-14 w-14 ${left
+        ? 'left-6'
+        : 'right-6'
         }`}
     >
 
       {/* Horizontal line */}
       <div
-        className={`absolute bottom-0 h-px w-14 bg-white/20 ${left ? 'left-0' : 'right-0'
+        className={`absolute bottom-0 h-px w-14 bg-white/20 ${left
+          ? 'left-0'
+          : 'right-0'
           }`}
       />
 
       {/* Vertical line */}
       <div
-        className={`absolute bottom-0 h-14 w-px bg-white/20 ${left ? 'left-0' : 'right-0'
+        className={`absolute bottom-0 h-14 w-px bg-white/20 ${left
+          ? 'left-0'
+          : 'right-0'
           }`}
       />
 
       {/* Red accent */}
       <div
-        className={`absolute bottom-0 h-1.5 w-1.5 bg-red-600 ${left ? 'left-0' : 'right-0'
+        className={`absolute bottom-0 h-1.5 w-1.5 bg-red-600 ${left
+          ? 'left-0'
+          : 'right-0'
           }`}
       />
 
